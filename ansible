@@ -1,0 +1,133 @@
+什么是ansible,ansible是2013年推出来的一款IT自动化管理部署工具基于Python研发实现批量操作系统配置
+批量程序部署，批量运行命令
+
+ansible可以实现
+自动化部署APP
+自动化管理配置项
+自动化持续交付
+自动化云服务器管理
+
+ansible优点
+只需要SSH和Python既可使用
+ansible功能强大 模块丰富
+
+ansible特性
+基于Python语言
+--paramiko
+--PyYAML(半结构语言）
+--Jinja2
+
+软件依赖关系
+要求Python
+ansible 使用以下模块 都需要安装
+-->paramiko
+-->PyYAML
+-->Jinja2
+-->httplib2
+-->sixinventory 
+
+主机定义与分组
+在/etc/ansible/ansible.cfg 定义主机目录
+
+inventory      = /etc/ansible/hosts
+
+开启登陆无YES或NO
+host_key_checking = False
+
+在/etc/ansible/host  文件下定义主机
+[组名称]      [nginx]
+ip地址        192.168.1.11
+
+查看单个组
+ansible nginx --list-hosts
+
+主机定义与分组
+[nginx]
+192.168.2.0
+192.168.2.1
+
+[mysql]
+192.168.1.0
+192.168.1.1
+
+ 定义组
+[ngimysq:children]
+nginx
+mysql
+
+快阶定义
+[nginx]
+192.168.2.[1:20]    1到20的主机
+
+自定义主机定义及配置文件
+/root/nginx/ansible.cfg
+位置文件自定义名
+[nginx]inventory = nginx
+host_key_chrcking = False
+
+在/root/nginx/nginx
+定义主机集群
+[nginx]
+192.168.2.0
+192.168.2.1
+
+[mysql]
+192.168.1.0
+192.168.1.1
+
+ansible命令基础
+- -M 指定模块路径
+- -m 使用模块，默认command模块
+- -a or --args模块参数
+- -i inventory文件路径，或可执行脚本
+- -k 使用交互式登陆密码
+- -e 定义变量
+- -v 详细信息
+
+ansible命令基础
+列出要执行的主机
+ansible all --list-hosts
+
+批量检测主机及命令
+ansible all -m ping -k
+
+批量部署SSH公钥
+ansible all -m authorized_key -a "user=root exclusive=true manage_dir=true key='$(</root/.ssh/id_rsa.pub)'" -k
+
+模块手册
+ansible-doc -l   查看所以模块
+
+command模块可以执行linux的基本命令及查看
+
+查看日期时间
+ansible all -m command -a 'date +%F_%T'
+
+查看所以机器负载
+ansible all -m command -a 'uptime‘
+
+command模块注意事项不支持字符
+如  < > | &
+
+shell | raw 模块
+
+可以支持字符
+ansible all -m shell -a  'useradd z3 && echo 123 | passwd --stdin z3'
+
+script模块
+可以在本的执行脚本
+ansible all -m script -a '/root/user.sh'#!/bin/bash
+vim /root/user.sh
+id z3
+if [ $? != 0 ];then
+        useradd li4
+        echo 123 | passwd --stdin li4
+fi
+
+
+
+
+
+
+
+
+
