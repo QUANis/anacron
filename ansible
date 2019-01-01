@@ -110,22 +110,95 @@ command模块注意事项不支持字符
 
 shell | raw 模块
 
+command   默认模块
+raw       适用性广，不支持cd 
+shell     万能模块
+
 可以支持字符
-ansible all -m shell -a  'useradd z3 && echo 123 | passwd --stdin z3'
+添加用户
+ansible all -m shell -a 'useradd  test'
+查询
+ansible all -m shell -a 'id test'
+
+给test 设置密码
+ansible all -m shell -a 'echo 123 | passwd --stdin tets‘
+
+判断如果有test就不创建li4
+vim /root/user.sh
+#!/bin/bash
+if ! $(id test &>/dev/null);then
+      useradd li4
+      echo 123456 | passwd --stdin li4
+fi
 
 script模块
 可以在本的执行脚本
-ansible all -m script -a '/root/user.sh'#!/bin/bash
-vim /root/user.sh
-id z3
-if [ $? != 0 ];then
-        useradd li4
-        echo 123 | passwd --stdin li4
-fi
+ansible all -m script -a '/root/user.sh'
+
+copy模块
+bachup：覆盖前先备份原文件，备份文件含有时间信息有选项YES|NO
+force：若目标主机含有文件但内容不同如果没有为YES则强制覆盖设为NO则只有当目标主机的目标位置不存在该文件是才复制 默认为YES
+复制文件
+ansible all -m copy -a 'src=/root/alog  dest=/root/a.log'
+复制目录
+ansible all -m copy -a 'src=/root/a   dest=/root'
+
+适用于文件文件一样的
+ansible all -m copy -a 'src=/etc/resolv.conf  dest=/etc/resolv.confv.conf'
+ansible all -m shell -a 'cat /etc/resolv.conf'
+作行修改修以行
+lineinfile行编辑器模块
+path目的文件：我要修改哪个文件 如/etc/resolv.conf
+regexp:正者表达事  如".*(\.114){3}“ 修改114配置出现3次
+line:将这行修改为 如"nameserver 8.8.8.8" 
+示范
+ansible all -m lineinfile -a '
+path="/ect/resolv.cong" 
+regexp="nameserver 114.114.114.144"
+line="nameserver 8.8.8.8"'
+
+ansible all -m lineinfile -a 'path="/etc/resolv.conf" regexp="nameserver 114.114.114.144" line="nameserver 8.8.8.8"'
+查看
+ansible all -m shell -a 'cat /etc/resolv.conf'
+
+ 
+replace条件修改
+path="/etc/resoiv.conf"
+regexp="8.8.8.8"
+replace="4.4.4.4"
+ansible all -m replace -a 'path="/etc/resolv.conf" regexp="8.8.8.8" replace="4.4.4.4"'
+ansible all -m shell -a 'cat /etc/resolv.conf'
+
+yum模块包管理
+使用yum包管理来管理软件包
+name:要进行操作的软件包名字 也可以本地的RPM包路径
+state 状态（present absent latest)
 
 
 
 
+帮助手册
+ansible-doc yum
+
+(`present' or `installed', `latest'),
+          正常安装       安装最新
+(`absent' or `removed')
+    卸载          卸载
+    
+
+删除软件包
+ansible all -m yum -a 'name=httpd state=removed'
+安装软件包
+ansible all -m yun -a 'name=httpd state=installed'
+
+service模块
+name:必须服务名称
+enabled 是否开机起的yes|no
+state 对服务执行（启动        停止     重起         重新加载）
+               （started  stopped   restarted   reloaded)
+ansible all -m yum -a 'name="httpd" enabled="yes" state="started"
+
+ 
 
 
 
