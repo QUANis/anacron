@@ -198,7 +198,117 @@ state 对服务执行（启动        停止     重起         重新加载）
                （started  stopped   restarted   reloaded)
 ansible all -m yum -a 'name="httpd" enabled="yes" state="started"
 
- 
+
+写一个shell 脚本 用ansible调用
+写playbooy 语法
+YAML基础语法
+- YAML的结构通过空格来展示
+- 数组使用"_"来表示
+- 健值对使用":"来表示
+- YAML使用一个固定的缩进风格来表示数据层级结构关系
+- 一般每个缩进级别有两个以上空格组成
+- #表示注释
+- 注意不要使用TAB
+- 同一层缩进必须对其
+
+为什么要使用playbook
+- 执行一些简单的任务，使用ad-hoc命令可以方便的解决问题
+- 绿色代表执行成功
+- ***代表系统为发生改变
+- 红色代表执行失败
+- play中hosts=主机集合
+- play中tasks=命令的集合执行命令是病发
+
+vim ping.yml   # ping模块
+---
+- hosts: all   结合主机
+  remote_user: root   用root执行
+  tasks:
+    -ping       模块 
+ansible-playbook ping.yml 执行命令
+ansible-playbook -f 5 ping.yml   #-f 5 执行5次
+
+创建用户
+vim user.yml
+---
+- hosts: all
+  tasks:
+    - name: 注释useradd test用户
+    - user:
+        name: test
+    - name:注释修改密码
+    - shell: echo 123|passwd --stdin test
+    
+playbook
+安装Apache并修改端口为8080
+修改ServerName配置 执行apachectl -t命令不报错
+设置默认主页hello world
+启动服务并设置开机自动启
+
+帮助文档
+ansible-doc yum
+
+vim /root/httpd.yml
+---
+- hosts: web
+  remote_user: root
+  tasks:
+    - name: install the latest version of Apache
+      yum:
+        name: httpd
+        state: latest
+    - lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^Listen '
+        insertafter: '^#Listen '
+        line: 'Listen 8080'
+    - lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^#ServerName'
+        line: 'ServerName localhost'
+    - copy:
+        src: index.html                   当前目录下创建index.html
+        dest: /var/www/html/
+        owner: apache
+        group: apache
+        mode: 0644
+    - service:
+        name: httpd
+        state: started
+        enabled: yes
+
+变量
+vim /root/bianlan.yml
+---
+- hosts: all
+  remote_user: root
+  vars:
+    username: lisi
+  tasks:
+    - name: add user "{{username}}"
+      user:
+        name: "{{username}}"
+    - shell: echo 123|passwd --stdin "{{username}}"
+
+ansible-playbook bianlan.yml
+自定义参数
+ansible-playbook -e '{"username": "lis4"}' bianlan.yml  #定义的参数改变不了配置文件
+
+过滤器密码加密
+---
+- hosts: all
+  remote_user: root
+  vars:
+    username: lisi
+  tasks:
+    - name: add user "{{username}}"
+      user:
+        name: "{{username}}"
+        passwoed: "{{'123'|password_hash('sha512')}}"
+
+
+
+
 
 
 
